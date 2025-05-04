@@ -115,7 +115,15 @@ const updateAllTranslations = () => {
         }
     });
     
-    // Mettre à jour d'autres éléments spécifiques si nécessaire
+    // Mettre à jour les aliments dans l'interface
+    document.querySelectorAll('.food-item').forEach(el => {
+        const foodId = el.getAttribute('data-id');
+        if (foodId && i18next.exists(foodId)) {
+            el.textContent = i18next.t(foodId);
+        }
+    });
+    
+    // Mettre à jour d'autres éléments spécifiques
     updateSpecificElements();
 };
 
@@ -139,13 +147,25 @@ const updateSpecificElements = () => {
         tutorialText.textContent = i18next.t('welcome-message');
     }
     
-    // Mise à jour des aliments dans l'interface
+    // Mise à jour des aliments dans l'interface - important pour régler le bug
     document.querySelectorAll('.food-item').forEach(el => {
         const foodId = el.getAttribute('data-id');
         if (foodId && i18next.exists(foodId)) {
             el.textContent = i18next.t(foodId);
         }
     });
+    
+    // Mise à jour des compteurs pour le jeu de mémoire
+    const attempts = document.getElementById('attempts');
+    const matches = document.getElementById('matches');
+    
+    if (attempts && typeof window.attemptsCount !== 'undefined') {
+        attempts.textContent = i18next.t('attempts', { count: window.attemptsCount });
+    }
+    
+    if (matches && typeof window.matchesCount !== 'undefined') {
+        matches.textContent = i18next.t('matches', { count: window.matchesCount, total: 6 });
+    }
 };
 
 // Fonction pour traduire dynamiquement avec des variables
