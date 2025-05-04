@@ -11,7 +11,7 @@ const initI18n = async () => {
         const resources = {};
         
         for (const lang of languages) {
-            const response = await fetch(`js/data/locales/${lang}.json`);
+            const response = await fetch(`js/data/local/${lang}.json`);
             if (!response.ok) {
                 throw new Error(`Impossible de charger la langue ${lang}`);
             }
