@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Le Palais Impérial de la Nutrition</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Bibliothèques autorisées -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/i18next/21.6.16/i18next.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+</head>
+<body>
+    <div id="game-container">
+        <!-- Écran de titre -->
+        <div id="title-screen" class="screen active">
+            <div class="title-content">
+                <h1 id="game-title">Le Palais Impérial de la Nutrition</h1>
+                <div class="language-selector">
+                    <button data-lang="fr" class="lang-btn active">Français</button>
+                    <button data-lang="en" class="lang-btn">English</button>
+                    <button data-lang="zh" class="lang-btn">简体中文</button>
+                </div>
+                <button id="start-game" class="btn-primary">Commencer l'aventure</button>
+            </div>
+        </div>
+
+        <!-- Écran de cérémonie d'accueil (tutoriel) -->
+        <div id="welcome-screen" class="screen">
+            <div class="character-container">
+                <div class="character" id="grand-sage"></div>
+                <div class="dialog-box">
+                    <p id="tutorial-text">Bienvenue au Palais Impérial de la Nutrition, jeune voyageur ! Je suis le Grand Sage, gardien des connaissances nutritionnelles.</p>
+                </div>
+            </div>
+            <div class="tutorial-controls">
+                <div class="tutorial-step">
+                    <div class="tutorial-icon click-icon"></div>
+                    <p id="tutorial-click">Cliquez pour interagir</p>
+                </div>
+                <div class="tutorial-step">
+                    <div class="tutorial-icon drag-icon"></div>
+                    <p id="tutorial-drag">Glissez-déposez les éléments</p>
+                </div>
+            </div>
+            <button id="tutorial-next" class="btn-primary">Continuer</button>
+        </div>
+
+        <!-- Chapitre 1: Rencontre des Ministres (macronutriments) -->
+        <div id="ministers-screen" class="screen">
+            <h2 id="ministers-title">Les Ministres des Macronutriments</h2>
+            <div class="ministers-container">
+                <div class="minister" id="protein-minister">
+                    <div class="minister-avatar"></div>
+                    <h3>Ministre des Protéines</h3>
+                    <div class="minister-drop-zone" data-nutrient="protein"></div>
+                </div>
+                <div class="minister" id="carbs-minister">
+                    <div class="minister-avatar"></div>
+                    <h3>Ministre des Glucides</h3>
+                    <div class="minister-drop-zone" data-nutrient="carbs"></div>
+                </div>
+                <div class="minister" id="fat-minister">
+                    <div class="minister-avatar"></div>
+                    <h3>Ministre des Lipides</h3>
+                    <div class="minister-drop-zone" data-nutrient="fat"></div>
+                </div>
+            </div>
+            <div class="food-items-container">
+                <!-- Les aliments seront générés dynamiquement ici -->
+            </div>
+            <div class="feedback-message"></div>
+            <button id="ministers-next" class="btn-primary">Chapitre suivant</button>
+        </div>
+
+        <!-- Chapitre 2: Gardiens Secrets (micronutriments) -->
+        <div id="guardians-screen" class="screen">
+            <h2 id="guardians-title">Les Gardiens des Micronutriments</h2>
+            <div class="memory-game">
+                <!-- Les cartes seront générées dynamiquement ici -->
+            </div>
+            <div class="score-display">
+                <span id="attempts">Tentatives: 0</span>
+                <span id="matches">Paires: 0/6</span>
+            </div>
+            <button id="guardians-next" class="btn-primary">Chapitre suivant</button>
+        </div>
+
+        <!-- Chapitre 3: Équilibre du Royaume -->
+        <div id="balance-screen" class="screen">
+            <h2 id="balance-title">L'Harmonie des Cinq Éléments</h2>
+            <div class="five-elements">
+                <div class="element" data-element="wood">
+                    <h3>Bois</h3>
+                    <div class="element-drop-zone" data-element="wood"></div>
+                </div>
+                <div class="element" data-element="fire">
+                    <h3>Feu</h3>
+                    <div class="element-drop-zone" data-element="fire"></div>
+                </div>
+                <div class="element" data-element="earth">
+                    <h3>Terre</h3>
+                    <div class="element-drop-zone" data-element="earth"></div>
+                </div>
+                <div class="element" data-element="metal">
+                    <h3>Métal</h3>
+                    <div class="element-drop-zone" data-element="metal"></div>
+                </div>
+                <div class="element" data-element="water">
+                    <h3>Eau</h3>
+                    <div class="element-drop-zone" data-element="water"></div>
+                </div>
+            </div>
+            <div class="balance-food-items">
+                <!-- Les aliments seront générés dynamiquement ici -->
+            </div>
+            <div class="balance-validator">
+                <button id="check-balance" class="btn-secondary">Vérifier l'équilibre</button>
+                <div class="balance-feedback"></div>
+            </div>
+            <button id="balance-next" class="btn-primary">Chapitre suivant</button>
+        </div>
+
+        <!-- Chapitre 4: Envahisseurs du Royaume -->
+        <div id="invaders-screen" class="screen">
+            <h2 id="invaders-title">Les Envahisseurs du Royaume</h2>
+            <div class="food-label">
+                <div class="food-label-image"></div>
+                <div class="food-label-ingredients">
+                    <h3>Ingrédients:</h3>
+                    <ul id="ingredients-list">
+                        <!-- Liste d'ingrédients générée dynamiquement -->
+                    </ul>
+                </div>
+            </div>
+            <div class="decision-buttons">
+                <button id="ban-food" class="btn-danger">Bannir</button>
+                <button id="allow-food" class="btn-success">Autoriser</button>
+            </div>
+            <div class="invaders-feedback"></div>
+            <button id="invaders-next" class="btn-primary">Chapitre suivant</button>
+        </div>
+
+        <!-- Chapitre 5: Sagesse Ancestrale & Moderne -->
+        <div id="wisdom-screen" class="screen">
+            <h2 id="wisdom-title">Sagesse Ancestrale & Moderne</h2>
+            <div class="quiz-container">
+                <div class="quiz-question">
+                    <p id="current-question">Question ici...</p>
+                    <div class="quiz-options">
+                        <!-- Options générées dynamiquement -->
+                    </div>
+                </div>
+                <div class="quiz-feedback"></div>
+            </div>
+            <div class="quiz-progress">
+                <span id="question-counter">Question 1/5</span>
+            </div>
+            <button id="wisdom-next" class="btn-primary">Voir les résultats</button>
+        </div>
+
+        <!-- Écran de résultat -->
+        <div id="results-screen" class="screen">
+            <h2 id="results-title">Résultats de votre voyage</h2>
+            <div class="results-summary">
+                <div class="stars-container">
+                    <div class="chapter-result">
+                        <h3>Ministres</h3>
+                        <div class="stars" data-chapter="ministers"></div>
+                    </div>
+                    <div class="chapter-result">
+                        <h3>Gardiens</h3>
+                        <div class="stars" data-chapter="guardians"></div>
+                    </div>
+                    <div class="chapter-result">
+                        <h3>Équilibre</h3>
+                        <div class="stars" data-chapter="balance"></div>
+                    </div>
+                    <div class="chapter-result">
+                        <h3>Envahisseurs</h3>
+                        <div class="stars" data-chapter="invaders"></div>
+                    </div>
+                    <div class="chapter-result">
+                        <h3>Sagesse</h3>
+                        <div class="stars" data-chapter="wisdom"></div>
+                    </div>
+                </div>
+                <div class="badges-container">
+                    <h3 id="badges-title">Badges obtenus</h3>
+                    <div class="badges-grid">
+                        <!-- Badges générés dynamiquement -->
+                    </div>
+                </div>
+                <div class="final-score">
+                    <h3 id="score-title">Score final</h3>
+                    <p id="score-value">0</p>
+                </div>
+            </div>
+            <div class="export-container">
+                <button id="export-csv" class="btn-secondary">Exporter les résultats (CSV)</button>
+            </div>
+            <button id="restart-game" class="btn-primary">Rejouer</button>
+        </div>
+    </div>
+
+    <!-- Scripts du jeu -->
+    <script src="js/i18n.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
