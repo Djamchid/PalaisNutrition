@@ -767,3 +767,564 @@
         checkBalanceBtn.addEventListener('click', checkNutritionalBalance);
         
         // Configurer le
+// Configurer le bouton suivant
+        const nextButton = document.getElementById('balance-next');
+        nextButton.addEventListener('click', () => {
+            // Calculer les étoiles pour ce chapitre
+            calculateStars('balance');
+            showScreen('invaders-screen');
+        });
+        
+        // Réinitialiser le feedback
+        const balanceFeedback = document.querySelector('.balance-feedback');
+        balanceFeedback.textContent = '';
+        
+        // Définir le score maximum possible
+        gameState.chapters.balance.maxScore = 100; // Valeur arbitraire pour ce mini-jeu
+    }
+    
+    // Variables pour le drag and drop du chapitre Équilibre
+    let balanceDraggedItem = null;
+    
+    function handleBalanceDragStart(e) {
+        balanceDraggedItem = e.target;
+        e.dataTransfer.setData('text/plain', '');
+        setTimeout(() => {
+            balanceDraggedItem.classList.add('dragging');
+        }, 0);
+    }
+    
+    function handleBalanceDragOver(e) {
+        e.preventDefault();
+        e.currentTarget.classList.add('highlight');
+    }
+    
+    function handleBalanceDragLeave(e) {
+        e.currentTarget.classList.remove('highlight');
+    }
+    
+    function handleBalanceDrop(e) {
+        e.preventDefault();
+        const dropZone = e.currentTarget;
+        dropZone.classList.remove('highlight');
+        
+        if (!balanceDraggedItem) return;
+        
+        // Vérifier si la zone a déjà un aliment
+        if (dropZone.firstChild) {
+            // Retirer l'ancien aliment et le remettre dans le conteneur
+            const oldFood = dropZone.firstChild;
+            oldFood.setAttribute('draggable', 'true');
+            oldFood.addEventListener('dragstart', handleBalanceDragStart);
+            dropZone.removeChild(oldFood);
+            document.querySelector('.balance-food-items').appendChild(oldFood);
+        }
+        
+        // Placer le nouvel aliment dans la zone
+        dropZone.appendChild(balanceDraggedItem);
+        balanceDraggedItem.classList.remove('dragging');
+        balanceDraggedItem.setAttribute('draggable', 'false');
+        
+        // Jouer un son
+        playSound('click');
+        
+        balanceDraggedItem = null;
+    }
+    
+    // Fonction pour vérifier l'équilibre nutritionnel
+    function checkNutritionalBalance() {
+        const dropZones = document.querySelectorAll('.element-drop-zone');
+        const balanceFeedback = document.querySelector('.balance-feedback');
+        
+        // Vérifier si toutes les zones sont remplies
+        let allFilled = true;
+        let totalProtein = 0;
+        let totalCarbs = 0;
+        let totalFat = 0;
+        let elementsUsed = new Set();
+        
+        dropZones.forEach(zone => {
+            if (!zone.firstChild) {
+                allFilled = false;
+                return;
+            }
+            
+            const food = zone.firstChild;
+            const element = food.getAttribute('data-element');
+            elementsUsed.add(element);
+            
+            // Additionner les macros
+            totalProtein += parseInt(food.getAttribute('data-protein') || 0);
+            totalCarbs += parseInt(food.getAttribute('data-carbs') || 0);
+            totalFat += parseInt(food.getAttribute('data-fat') || 0);
+        });
+        
+        if (!allFilled) {
+            balanceFeedback.textContent = window.i18n.translate('balance-error');
+            playSound('error');
+            return;
+        }
+        
+        // Vérifier si tous les éléments sont différents
+        const allDifferentElements = elementsUsed.size === 5;
+        
+        // Vérifier l'équilibre des macros (ratio simplifié)
+        // Idéal: Protéines 20-30%, Glucides 45-65%, Lipides 20-35%
+        const totalNutrients = totalProtein + totalCarbs + totalFat;
+        const proteinRatio = totalProtein / totalNutrients;
+        const carbsRatio = totalCarbs / totalNutrients;
+        const fatRatio = totalFat / totalNutrients;
+        
+        const isBalanced = (
+            proteinRatio >= 0.15 && proteinRatio <= 0.35 &&
+            carbsRatio >= 0.4 && carbsRatio <= 0.7 &&
+            fatRatio >= 0.15 && fatRatio <= 0.4
+        );
+        
+        if (isBalanced && allDifferentElements) {
+            // Parfaitement équilibré
+            balanceFeedback.textContent = window.i18n.translate('balance-success');
+            updateScore(GAME_CONFIG.pointsPerCorrectAction * 5, 'balance');
+            
+            // Effets de succès
+            dropZones.forEach(zone => createParticles(zone));
+            playSound('success');
+            
+            // Attribuer le badge
+            gameState.badges.balance = true;
+            saveProgress();
+        } else if (isBalanced) {
+            // Macros équilibrés mais pas tous les éléments
+            balanceFeedback.textContent = window.i18n.translate('balance-partial');
+            updateScore(GAME_CONFIG.pointsPerCorrectAction * 2, 'balance');
+            playSound('click');
+        } else {
+            // Déséquilibré
+            balanceFeedback.textContent = window.i18n.translate('balance-error');
+            playSound('error');
+        }
+    }
+    
+    // ================================
+    // CHAPITRE 4: ENVAHISSEURS (ALIMENTS TRANSFORMÉS)
+    // ================================
+    
+    // Données des aliments pour le chapitre Envahisseurs
+    const invadersData = {
+        foods: [
+            {
+                id: 'natural-yogurt',
+                image: 'yogurt.png',
+                ingredients: ['lait entier', 'ferments lactiques'],
+                processed: false
+            },
+            {
+                id: 'cereal-bar',
+                image: 'cereal-bar.png',
+                ingredients: ['sirop de glucose-fructose', 'sucre', 'huile de palme', 'farine de blé', 'arômes artificiels', 'émulsifiants E471, E472'],
+                processed: true
+            },
+            {
+                id: 'apple',
+                image: 'apple.png',
+                ingredients: ['pomme'],
+                processed: false
+            },
+            {
+                id: 'soda',
+                image: 'soda.png',
+                ingredients: ['eau gazéifiée', 'sirop de maïs à haute teneur en fructose', 'caramel (E150d)', 'acide phosphorique', 'arômes naturels', 'caféine'],
+                processed: true
+            },
+            {
+                id: 'bread',
+                image: 'bread.png',
+                ingredients: ['farine de blé', 'eau', 'levure', 'sel'],
+                processed: false
+            },
+            {
+                id: 'chicken-nuggets',
+                image: 'chicken-nuggets.png',
+                ingredients: ['viande séparée mécaniquement de poulet (45%)', 'eau', 'huile de palme', 'farine de blé', 'amidon modifié', 'sel', 'exhausteurs de goût (E621)', 'conservateurs (E450, E451)', 'arômes'],
+                processed: true
+            },
+            {
+                id: 'tofu',
+                image: 'tofu.png',
+                ingredients: ['soja', 'eau', 'nigari (chlorure de magnésium)'],
+                processed: false
+            },
+            {
+                id: 'instant-noodles',
+                image: 'instant-noodles.png',
+                ingredients: ['farine de blé', 'huile de palme', 'sel', 'stabilisants (E501, E500)', 'colorant (E100)', 'exhausteurs de goût (E621, E635)', 'arômes'],
+                processed: true
+            }
+        ]
+    };
+    
+    // Variables pour le chapitre Envahisseurs
+    let currentFoodIndex = 0;
+    let invaderScore = 0;
+    
+    // Initialisation du chapitre Envahisseurs
+    function initInvadersScreen() {
+        // Réinitialiser les variables
+        currentFoodIndex = 0;
+        invaderScore = 0;
+        
+        // Configurer les boutons
+        const banButton = document.getElementById('ban-food');
+        const allowButton = document.getElementById('allow-food');
+        
+        banButton.addEventListener('click', () => handleFoodDecision(true));
+        allowButton.addEventListener('click', () => handleFoodDecision(false));
+        
+        // Configurer le bouton suivant
+        const nextButton = document.getElementById('invaders-next');
+        nextButton.addEventListener('click', () => {
+            // Calculer les étoiles pour ce chapitre
+            calculateStars('invaders');
+            showScreen('wisdom-screen');
+        });
+        
+        // Mélanger les aliments
+        invadersData.foods = shuffleArray(invadersData.foods);
+        
+        // Afficher le premier aliment
+        showFood(0);
+        
+        // Définir le score maximum possible
+        gameState.chapters.invaders.maxScore = invadersData.foods.length * GAME_CONFIG.pointsPerCorrectAction;
+    }
+    
+    // Fonction pour afficher un aliment
+    function showFood(index) {
+        if (index >= invadersData.foods.length) {
+            // Fin du mini-jeu
+            document.getElementById('invaders-next').style.display = 'block';
+            document.querySelector('.decision-buttons').style.display = 'none';
+            
+            // Attribuer le badge si score suffisant
+            if (invaderScore >= invadersData.foods.length * 0.75) {
+                gameState.badges.invaders = true;
+                saveProgress();
+            }
+            
+            return;
+        }
+        
+        const food = invadersData.foods[index];
+        const foodImage = document.querySelector('.food-label-image');
+        const ingredientsList = document.getElementById('ingredients-list');
+        
+        // Mettre à jour l'image (simulation)
+        foodImage.style.backgroundColor = food.processed ? '#e88' : '#8e8';
+        
+        // Mettre à jour la liste d'ingrédients
+        ingredientsList.innerHTML = '';
+        food.ingredients.forEach(ingredient => {
+            const li = document.createElement('li');
+            li.textContent = ingredient;
+            ingredientsList.appendChild(li);
+        });
+        
+        // Réinitialiser le feedback
+        document.querySelector('.invaders-feedback').textContent = '';
+        
+        // Afficher les boutons de décision
+        document.querySelector('.decision-buttons').style.display = 'flex';
+        document.getElementById('invaders-next').style.display = 'none';
+    }
+    
+    // Fonction pour gérer la décision sur un aliment
+    function handleFoodDecision(isBanned) {
+        const food = invadersData.foods[currentFoodIndex];
+        const feedback = document.querySelector('.invaders-feedback');
+        
+        if ((isBanned && food.processed) || (!isBanned && !food.processed)) {
+            // Décision correcte
+            feedback.textContent = isBanned ? window.i18n.translate('ban-success') : window.i18n.translate('allow-success');
+            updateScore(GAME_CONFIG.pointsPerCorrectAction, 'invaders');
+            invaderScore++;
+            
+            // Effets de succès
+            createParticles(document.querySelector('.food-label'));
+            playSound('success');
+        } else {
+            // Décision incorrecte
+            feedback.textContent = isBanned ? window.i18n.translate('ban-error') : window.i18n.translate('allow-error');
+            updateScore(GAME_CONFIG.pointsPerError, 'invaders');
+            
+            // Effet sonore d'erreur
+            playSound('error');
+        }
+        
+        // Passer à l'aliment suivant après un délai
+        setTimeout(() => {
+            currentFoodIndex++;
+            showFood(currentFoodIndex);
+        }, 1500);
+    }
+    
+    // ================================
+    // CHAPITRE 5: SAGESSE (QUIZ)
+    // ================================
+    
+    // Données des questions pour le quiz
+    const wisdomData = {
+        questions: [
+            {
+                id: 'q1',
+                options: ['q1-a', 'q1-b', 'q1-c'],
+                correct: 'q1-correct',
+                explanation: 'q1-explain'
+            },
+            {
+                id: 'q2',
+                options: ['q2-a', 'q2-b', 'q2-c'],
+                correct: 'q2-correct',
+                explanation: 'q2-explain'
+            },
+            {
+                id: 'q3',
+                options: ['q3-a', 'q3-b', 'q3-c'],
+                correct: 'q3-correct',
+                explanation: 'q3-explain'
+            },
+            {
+                id: 'q4',
+                options: ['q4-a', 'q4-b', 'q4-c'],
+                correct: 'q4-correct',
+                explanation: 'q4-explain'
+            },
+            {
+                id: 'q5',
+                options: ['q5-a', 'q5-b', 'q5-c'],
+                correct: 'q5-correct',
+                explanation: 'q5-explain'
+            }
+        ]
+    };
+    
+    // Variables pour le quiz
+    let currentQuestionIndex = 0;
+    let wisdomScore = 0;
+    
+    // Initialisation du chapitre Sagesse
+    function initWisdomScreen() {
+        // Réinitialiser les variables
+        currentQuestionIndex = 0;
+        wisdomScore = 0;
+        
+        // Configurer le bouton suivant
+        const nextButton = document.getElementById('wisdom-next');
+        nextButton.style.display = 'none';
+        nextButton.addEventListener('click', () => {
+            // Calculer les étoiles pour ce chapitre
+            calculateStars('wisdom');
+            
+            // Marquer le chapitre comme terminé
+            gameState.chapters.wisdom.completed = true;
+            
+            // Attribuer le badge si score suffisant
+            if (wisdomScore >= wisdomData.questions.length * 0.8) {
+                gameState.badges.wisdom = true;
+            }
+            
+            // Vérifier les badges
+            checkBadges();
+            
+            // Aller à l'écran de résultats
+            showScreen('results-screen');
+        });
+        
+        // Afficher la première question
+        showQuestion(0);
+        
+        // Définir le score maximum possible
+        gameState.chapters.wisdom.maxScore = wisdomData.questions.length * GAME_CONFIG.pointsPerCorrectAction;
+    }
+    
+    // Fonction pour afficher une question
+    function showQuestion(index) {
+        if (index >= wisdomData.questions.length) {
+            // Fin du quiz
+            document.getElementById('wisdom-next').style.display = 'block';
+            document.querySelector('.quiz-question').style.display = 'none';
+            document.querySelector('.quiz-progress').style.display = 'none';
+            return;
+        }
+        
+        const question = wisdomData.questions[index];
+        const questionElement = document.getElementById('current-question');
+        const optionsContainer = document.querySelector('.quiz-options');
+        const progressCounter = document.getElementById('question-counter');
+        
+        // Mettre à jour la question
+        questionElement.textContent = window.i18n.translate(question.id);
+        
+        // Mettre à jour les options
+        optionsContainer.innerHTML = '';
+        question.options.forEach((option, optIndex) => {
+            const optionElement = document.createElement('div');
+            optionElement.className = 'quiz-option';
+            optionElement.textContent = window.i18n.translate(option);
+            optionElement.setAttribute('data-option', option);
+            
+            optionElement.addEventListener('click', handleQuizAnswer);
+            
+            optionsContainer.appendChild(optionElement);
+        });
+        
+        // Mettre à jour le compteur de progression
+        progressCounter.textContent = window.i18n.translateWithVars('question-counter', { current: index + 1, total: wisdomData.questions.length });
+        
+        // Réinitialiser le feedback
+        document.querySelector('.quiz-feedback').textContent = '';
+    }
+    
+    // Fonction pour gérer la réponse à une question du quiz
+    function handleQuizAnswer(e) {
+        const selectedOption = e.target;
+        const question = wisdomData.questions[currentQuestionIndex];
+        const correctOptionId = window.i18n.translate(question.correct);
+        const feedback = document.querySelector('.quiz-feedback');
+        const options = document.querySelectorAll('.quiz-option');
+        
+        // Désactiver toutes les options
+        options.forEach(option => {
+            option.removeEventListener('click', handleQuizAnswer);
+        });
+        
+        // Vérifier si la réponse est correcte
+        const selectedOptionId = selectedOption.getAttribute('data-option');
+        const isCorrect = selectedOptionId.endsWith(correctOptionId);
+        
+        if (isCorrect) {
+            // Réponse correcte
+            selectedOption.classList.add('correct');
+            feedback.textContent = window.i18n.translate('correct-answer') + ' ' + window.i18n.translate(question.explanation);
+            updateScore(GAME_CONFIG.pointsPerCorrectAction, 'wisdom');
+            wisdomScore++;
+            
+            // Effets de succès
+            createParticles(selectedOption);
+            playSound('success');
+        } else {
+            // Réponse incorrecte
+            selectedOption.classList.add('incorrect');
+            
+            // Marquer la bonne réponse
+            options.forEach(option => {
+                if (option.getAttribute('data-option').endsWith(correctOptionId)) {
+                    option.classList.add('correct');
+                }
+            });
+            
+            feedback.textContent = window.i18n.translate('wrong-answer') + ' ' + window.i18n.translate(question.explanation);
+            updateScore(GAME_CONFIG.pointsPerError, 'wisdom');
+            
+            // Effet sonore d'erreur
+            playSound('error');
+        }
+        
+        // Passer à la question suivante après un délai
+        setTimeout(() => {
+            currentQuestionIndex++;
+            showQuestion(currentQuestionIndex);
+        }, 3000);
+    }
+    
+    // ================================
+    // ÉCRAN DE RÉSULTATS
+    // ================================
+    
+    // Initialisation de l'écran de résultats
+    function initResultsScreen() {
+        // Afficher le score final
+        document.getElementById('score-value').textContent = gameState.score;
+        
+        // Afficher les étoiles pour chaque chapitre
+        const starContainers = document.querySelectorAll('.stars');
+        starContainers.forEach(container => {
+            container.innerHTML = '';
+            const chapter = container.getAttribute('data-chapter');
+            const stars = gameState.chapters[chapter].stars;
+            
+            for (let i = 0; i < 3; i++) {
+                const star = document.createElement('div');
+                star.className = 'star' + (i < stars ? ' earned' : '');
+                container.appendChild(star);
+            }
+        });
+        
+        // Afficher les badges
+        const badgesContainer = document.querySelector('.badges-grid');
+        badgesContainer.innerHTML = '';
+        
+        // Créer les badges
+        const badges = [
+            { id: 'ministers', key: 'badge-ministers' },
+            { id: 'guardians', key: 'badge-guardians' },
+            { id: 'balance', key: 'badge-balance' },
+            { id: 'invaders', key: 'badge-invaders' },
+            { id: 'wisdom', key: 'badge-wisdom' },
+            { id: 'bilingual', key: 'badge-bilingual' }
+        ];
+        
+        badges.forEach(badge => {
+            const badgeElement = document.createElement('div');
+            badgeElement.className = 'badge' + (gameState.badges[badge.id] ? ' earned' : '');
+            badgeElement.title = window.i18n.translate(badge.key);
+            badgeElement.textContent = badge.id.charAt(0).toUpperCase();
+            
+            badgesContainer.appendChild(badgeElement);
+        });
+        
+        // Configurer le bouton d'export CSV
+        const exportButton = document.getElementById('export-csv');
+        exportButton.addEventListener('click', exportResultsToCSV);
+        
+        // Configurer le bouton de redémarrage
+        const restartButton = document.getElementById('restart-game');
+        restartButton.addEventListener('click', () => {
+            showScreen('title-screen');
+        });
+        
+        // Marquer le jeu comme terminé dans la langue actuelle
+        gameState.completedLanguages.add(gameState.lang);
+        saveProgress();
+    }
+    
+    // ================================
+    // INITIALISATION DU JEU
+    // ================================
+    
+    // Fonction d'initialisation principale
+    function init() {
+        // Charger les progrès si disponibles
+        loadProgress();
+        
+        // Initialiser les sons
+        initSounds();
+        
+        // Initialiser les écrans
+        initTitleScreen();
+        
+        // Afficher l'écran de titre
+        showScreen('title-screen');
+        
+        // Démarrer la musique de fond
+        // sounds.bgMusic.play();
+        
+        console.log('Le Palais Impérial de la Nutrition initialisé avec succès !');
+    }
+    
+    // Lancer l'initialisation une fois le DOM chargé
+    document.addEventListener('DOMContentLoaded', init);
+    
+    // Exposer les fonctions utiles pour les autres modules
+    window.playSound = playSound;
+    
+})();
