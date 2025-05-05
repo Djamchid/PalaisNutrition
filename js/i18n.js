@@ -34,7 +34,7 @@ const initI18n = async () => {
         // Forcer une première mise à jour des traductions après initialisation
         setTimeout(() => {
             updateAllTranslations();
-        }, 500);
+        }, 100);
     } catch (error) {
         console.error('Erreur lors de l\'initialisation de i18n:', error);
         // Fallback pour le développement si les fichiers ne sont pas disponibles
@@ -65,7 +65,19 @@ const fallbackInitialization = () => {
                 'food-fat-1': 'Avocat',
                 'food-fat-2': 'Huile d\'olive',
                 'food-fat-3': 'Noix',
-                'food-fat-4': 'Sésame (芝麻)'
+                'food-fat-4': 'Sésame (芝麻)',
+                'symptom-1': 'Fatigue et faiblesse',
+                'vitamin-1': 'Fer',
+                'symptom-2': 'Saignements de gencives',
+                'vitamin-2': 'Vitamine C',
+                'symptom-3': 'Crampes musculaires',
+                'vitamin-3': 'Magnésium',
+                'symptom-4': 'Fragilité osseuse',
+                'vitamin-4': 'Calcium & Vitamine D',
+                'symptom-5': 'Vision nocturne réduite',
+                'vitamin-5': 'Vitamine A',
+                'symptom-6': 'Cicatrisation lente',
+                'vitamin-6': 'Zinc'
             }
         },
         en: {
@@ -85,7 +97,19 @@ const fallbackInitialization = () => {
                 'food-fat-1': 'Avocado',
                 'food-fat-2': 'Olive oil',
                 'food-fat-3': 'Nuts',
-                'food-fat-4': 'Sesame (芝麻)'
+                'food-fat-4': 'Sesame (芝麻)',
+                'symptom-1': 'Fatigue and weakness',
+                'vitamin-1': 'Iron',
+                'symptom-2': 'Bleeding gums',
+                'vitamin-2': 'Vitamin C',
+                'symptom-3': 'Muscle cramps',
+                'vitamin-3': 'Magnesium',
+                'symptom-4': 'Bone fragility',
+                'vitamin-4': 'Calcium & Vitamin D',
+                'symptom-5': 'Reduced night vision',
+                'vitamin-5': 'Vitamin A',
+                'symptom-6': 'Slow healing',
+                'vitamin-6': 'Zinc'
             }
         },
         zh: {
@@ -105,7 +129,19 @@ const fallbackInitialization = () => {
                 'food-fat-1': '牛油果',
                 'food-fat-2': '橄榄油',
                 'food-fat-3': '坚果',
-                'food-fat-4': '芝麻'
+                'food-fat-4': '芝麻',
+                'symptom-1': '疲劳和虚弱',
+                'vitamin-1': '铁',
+                'symptom-2': '牙龈出血',
+                'vitamin-2': '维生素C',
+                'symptom-3': '肌肉痉挛',
+                'vitamin-3': '镁',
+                'symptom-4': '骨质脆弱',
+                'vitamin-4': '钙和维生素D',
+                'symptom-5': '夜视能力下降',
+                'vitamin-5': '维生素A',
+                'symptom-6': '愈合缓慢',
+                'vitamin-6': '锌'
             }
         }
     };
@@ -119,7 +155,7 @@ const fallbackInitialization = () => {
         // Forcer une mise à jour initiale
         setTimeout(() => {
             updateAllTranslations();
-        }, 500);
+        }, 100);
     });
 };
 
@@ -181,6 +217,34 @@ const updateAllTranslations = () => {
         }
     });
     
+    // Mise à jour des cartes de mémoire
+    document.querySelectorAll('.memory-card .memory-card-front').forEach(el => {
+        const card = el.closest('.memory-card');
+        if (card) {
+            const cardId = card.getAttribute('data-id');
+            if (cardId && exists(cardId)) {
+                el.textContent = i18next.t(cardId);
+            }
+        }
+    });
+    
+    // Mise à jour des options de quiz
+    document.querySelectorAll('.quiz-option').forEach(el => {
+        const optionId = el.getAttribute('data-option');
+        if (optionId && exists(optionId)) {
+            el.textContent = i18next.t(optionId);
+        }
+    });
+    
+    // Mise à jour de la question du quiz actuelle
+    const currentQuestion = document.getElementById('current-question');
+    if (currentQuestion && window.wisdomData && window.currentQuestionIndex !== undefined) {
+        const questionId = window.wisdomData.questions[window.currentQuestionIndex]?.id;
+        if (questionId && exists(questionId)) {
+            currentQuestion.textContent = i18next.t(questionId);
+        }
+    }
+    
     // Mettre à jour d'autres éléments spécifiques
     updateSpecificElements();
     
@@ -212,19 +276,6 @@ const updateSpecificElements = () => {
         tutorialText.textContent = i18next.t('welcome-message');
     }
     
-    // Double vérification pour les aliments - c'est là que se situe le bug principal
-    document.querySelectorAll('.food-item').forEach(el => {
-        const foodId = el.getAttribute('data-id');
-        if (foodId && exists(foodId)) {
-            // Forcer la mise à jour du texte avec la traduction
-            const translatedText = i18next.t(foodId);
-            if (el.textContent !== translatedText) {
-                el.textContent = translatedText;
-                console.log(`Élément mis à jour: ${foodId} -> ${translatedText}`);
-            }
-        }
-    });
-    
     // Mise à jour des compteurs pour le jeu de mémoire
     const attempts = document.getElementById('attempts');
     const matches = document.getElementById('matches');
@@ -235,6 +286,15 @@ const updateSpecificElements = () => {
     
     if (matches && typeof window.matchesCount !== 'undefined') {
         matches.textContent = i18next.t('matches', { count: window.matchesCount, total: 6 });
+    }
+    
+    // Mise à jour du compteur de questions
+    const questionCounter = document.getElementById('question-counter');
+    if (questionCounter && typeof window.currentQuestionIndex !== 'undefined' && window.wisdomData) {
+        questionCounter.textContent = i18next.t('question-counter', {
+            current: window.currentQuestionIndex + 1,
+            total: window.wisdomData.questions.length
+        });
     }
 };
 
@@ -250,23 +310,9 @@ const translate = (key) => {
     return i18next.t(key);
 };
 
-// Initialiser i18n au chargement de la page
-document.addEventListener('DOMContentLoaded', async () => {
-    // Initialiser i18next
-    await initI18n();
-    
-    // Charger la langue enregistrée ou utiliser la langue par défaut
-    const savedLang = localStorage.getItem('nin_palace.lang') || 'fr';
-    changeLang(savedLang);
-    
-    // Ajouter des écouteurs d'événements pour les boutons de langue
-    document.querySelectorAll('.lang-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            changeLang(btn.getAttribute('data-lang'));
-        });
-    });
-    
-    // Observer le DOM pour les nouveaux éléments food-item
+// Observer pour les changements dynamiques du DOM
+function setupMutationObserver() {
+    // Observer le DOM pour les nouveaux éléments nécessitant une traduction
     const observer = new MutationObserver((mutations) => {
         let needsUpdate = false;
         
@@ -275,7 +321,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 mutation.addedNodes.forEach(node => {
                     if (node.nodeType === 1 && 
                         (node.classList.contains('food-item') || 
-                         node.querySelectorAll('.food-item').length > 0)) {
+                         node.classList.contains('memory-card') ||
+                         node.classList.contains('quiz-option') ||
+                         node.querySelectorAll('.food-item, .memory-card, .quiz-option').length > 0)) {
                         needsUpdate = true;
                     }
                 });
@@ -293,6 +341,28 @@ document.addEventListener('DOMContentLoaded', async () => {
         childList: true, 
         subtree: true 
     });
+    
+    return observer;
+}
+
+// Initialiser i18n au chargement de la page
+document.addEventListener('DOMContentLoaded', async () => {
+    // Initialiser i18next
+    await initI18n();
+    
+    // Charger la langue enregistrée ou utiliser la langue par défaut
+    const savedLang = localStorage.getItem('nin_palace.lang') || 'fr';
+    changeLang(savedLang);
+    
+    // Ajouter des écouteurs d'événements pour les boutons de langue
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            changeLang(btn.getAttribute('data-lang'));
+        });
+    });
+    
+    // Configurer l'observer pour les changements du DOM
+    setupMutationObserver();
 });
 
 // Exporter les fonctions utiles
