@@ -333,7 +333,7 @@ const updateSpecificElements = () => {
         matches.textContent = i18next.t('matches', { count: window.matchesCount, total: 6 });
     }
     
-    // Mise à jour du compteur de questions
+    // Mise à jour du compteur de questions et des questions du quiz
     const questionCounter = document.getElementById('question-counter');
     if (questionCounter && typeof window.currentQuestionIndex !== 'undefined' && window.wisdomData) {
         questionCounter.textContent = i18next.t('question-counter', {
@@ -341,6 +341,23 @@ const updateSpecificElements = () => {
             total: window.wisdomData.questions.length
         });
     }
+    
+    // CORRECTION: Mise à jour explicite des questions et options du quiz
+    const currentQuestion = document.getElementById('current-question');
+    if (currentQuestion && window.wisdomData && window.currentQuestionIndex !== undefined) {
+        const questionId = window.wisdomData.questions[window.currentQuestionIndex]?.id;
+        if (questionId && exists(questionId)) {
+            currentQuestion.textContent = i18next.t(questionId);
+        }
+    }
+    
+    // CORRECTION: Mise à jour des options du quiz
+    document.querySelectorAll('.quiz-option').forEach(el => {
+        const optionId = el.getAttribute('data-option');
+        if (optionId && exists(optionId)) {
+            el.textContent = i18next.t(optionId);
+        }
+    });
 };
 
 // Fonction pour traduire dynamiquement avec des variables
