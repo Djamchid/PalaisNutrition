@@ -1378,3 +1378,43 @@
     window.playSound = playSound;
     
 })();
+/**
+ * Add this to your main.js file to properly initialize the Grand Sage character
+ */
+
+// Function to initialize the Grand Sage character
+function initGrandSage() {
+    const grandSageContainer = document.getElementById('grand-sage');
+    if (!grandSageContainer) return;
+    
+    // Load the SVG
+    fetch('grand-sage-svg.svg')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to load Grand Sage SVG');
+            }
+            return response.text();
+        })
+        .then(svgContent => {
+            grandSageContainer.innerHTML = svgContent;
+        })
+        .catch(error => {
+            console.error('Error loading Grand Sage:', error);
+            // Fallback display
+            grandSageContainer.style.backgroundColor = '#ffcd75';
+            grandSageContainer.textContent = '🧙‍♂️';
+        });
+}
+
+// Call this function in the welcome screen initialization
+function initWelcomeScreen() {
+    // Initialize the Grand Sage character
+    initGrandSage();
+    
+    const tutorialNextBtn = document.getElementById('tutorial-next');
+    if (tutorialNextBtn) {
+        tutorialNextBtn.addEventListener('click', () => {
+            showScreen('ministers-screen');
+        });
+    }
+}
