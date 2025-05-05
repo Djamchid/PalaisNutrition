@@ -339,12 +339,39 @@
     
     // Initialisation de l'écran d'accueil
     function initWelcomeScreen() {
+        // Initialiser le Grand Sage
+        initGrandSage();
+        
         const tutorialNextBtn = document.getElementById('tutorial-next');
         if (tutorialNextBtn) {
             tutorialNextBtn.addEventListener('click', () => {
                 showScreen('ministers-screen');
             });
         }
+    }
+    
+    // Fonction pour initialiser le Grand Sage
+    function initGrandSage() {
+        const grandSageContainer = document.getElementById('grand-sage');
+        if (!grandSageContainer) return;
+        
+        // Charger le SVG
+        fetch('grand-sage-svg.svg')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to load Grand Sage SVG');
+                }
+                return response.text();
+            })
+            .then(svgContent => {
+                grandSageContainer.innerHTML = svgContent;
+            })
+            .catch(error => {
+                console.error('Error loading Grand Sage:', error);
+                // Fallback display
+                grandSageContainer.style.backgroundColor = '#ffcd75';
+                grandSageContainer.textContent = '🧙‍♂️';
+            });
     }
     
     // ================================
@@ -392,7 +419,7 @@
             foodElement.setAttribute('data-nutrient', food.nutrient);
             foodElement.setAttribute('data-id', food.id); // Important pour la traduction
             
-            // Correction: Utiliser la traduction au lieu de l'identifiant
+            // Utiliser la traduction au lieu de l'identifiant
             // Vérifier si la traduction existe
             if (window.i18n.exists && window.i18n.exists(food.id)) {
                 foodElement.textContent = window.i18n.translate(food.id);
@@ -773,17 +800,12 @@
             foodElement.setAttribute('data-id', food.id);
             foodElement.setAttribute('data-element', food.element);
             
-            // Correction: Utiliser la traduction au lieu de l'identifiant
+            // CORRECTION: Utiliser correctement la traduction au lieu de l'identifiant
             if (window.i18n && window.i18n.translate) {
                 foodElement.textContent = window.i18n.translate(food.id);
             } else {
-                // Fallback
-                const nameParts = food.id.split('-');
-                if (nameParts.length >= 2) {
-                    foodElement.textContent = `${nameParts[0]} ${nameParts[1]}`;
-                } else {
-                    foodElement.textContent = food.id;
-                }
+                // Fallback si i18n n'est pas disponible
+                foodElement.textContent = food.id;
             }
             
             // Stocker les macros dans des attributs data
@@ -827,7 +849,7 @@
         // Définir le score maximum possible
         gameState.chapters.balance.maxScore = 100; // Valeur arbitraire pour ce mini-jeu
         
-        // Forcer une mise à jour des traductions
+        // CORRECTION: Forcer une mise à jour des traductions APRÈS l'initialisation
         if (window.i18n && window.i18n.updateAllTranslations) {
             window.i18n.updateAllTranslations();
         }
@@ -1167,6 +1189,10 @@
         currentQuestionIndex = 0;
         wisdomScore = 0;
         
+        // Exposer pour i18n
+        window.currentQuestionIndex = currentQuestionIndex;
+        window.wisdomData = wisdomData;
+        
         // Configurer le bouton suivant
         const nextButton = document.getElementById('wisdom-next');
         nextButton.style.display = 'none';
@@ -1205,6 +1231,9 @@
             document.querySelector('.quiz-progress').style.display = 'none';
             return;
         }
+        
+        // Mettre à jour l'index courant pour i18n
+        window.currentQuestionIndex = index;
         
         const question = wisdomData.questions[index];
         const questionElement = document.getElementById('current-question');
@@ -1378,43 +1407,3 @@
     window.playSound = playSound;
     
 })();
-/**
- * Add this to your main.js file to properly initialize the Grand Sage character
- */
-
-// Function to initialize the Grand Sage character
-function initGrandSage() {
-    const grandSageContainer = document.getElementById('grand-sage');
-    if (!grandSageContainer) return;
-    
-    // Load the SVG
-    fetch('grand-sage-svg.svg')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Failed to load Grand Sage SVG');
-            }
-            return response.text();
-        })
-        .then(svgContent => {
-            grandSageContainer.innerHTML = svgContent;
-        })
-        .catch(error => {
-            console.error('Error loading Grand Sage:', error);
-            // Fallback display
-            grandSageContainer.style.backgroundColor = '#ffcd75';
-            grandSageContainer.textContent = '🧙‍♂️';
-        });
-}
-
-// Call this function in the welcome screen initialization
-function initWelcomeScreen() {
-    // Initialize the Grand Sage character
-    initGrandSage();
-    
-    const tutorialNextBtn = document.getElementById('tutorial-next');
-    if (tutorialNextBtn) {
-        tutorialNextBtn.addEventListener('click', () => {
-            showScreen('ministers-screen');
-        });
-    }
-}
