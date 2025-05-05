@@ -1215,11 +1215,23 @@
             showScreen('results-screen');
         });
         
-        // Afficher la première question
-        showQuestion(0);
-        
         // Définir le score maximum possible
         gameState.chapters.wisdom.maxScore = wisdomData.questions.length * GAME_CONFIG.pointsPerCorrectAction;
+        
+        // CORRECTION: S'assurer que les traductions sont disponibles avant d'afficher la première question
+        if (window.i18n && window.i18n.updateAllTranslations) {
+            // Force une mise à jour des traductions avant d'afficher la question
+            window.i18n.updateAllTranslations();
+            
+            // Petit délai pour s'assurer que les mises à jour DOM sont terminées
+            setTimeout(() => {
+                // Afficher la première question
+                showQuestion(0);
+            }, 50);
+        } else {
+            // Fallback si i18n n'est pas disponible
+            showQuestion(0);
+        }
     }
     
     // Fonction pour afficher une question
@@ -1240,15 +1252,26 @@
         const optionsContainer = document.querySelector('.quiz-options');
         const progressCounter = document.getElementById('question-counter');
         
-        // Mettre à jour la question
-        questionElement.textContent = window.i18n.translate(question.id);
+        // CORRECTION: Mettre à jour la question avec la traduction correcte
+        if (window.i18n && window.i18n.translate) {
+            questionElement.textContent = window.i18n.translate(question.id);
+        } else {
+            questionElement.textContent = question.id;
+        }
         
         // Mettre à jour les options
         optionsContainer.innerHTML = '';
         question.options.forEach((option, optIndex) => {
             const optionElement = document.createElement('div');
             optionElement.className = 'quiz-option';
-            optionElement.textContent = window.i18n.translate(option);
+            
+            // CORRECTION: Utiliser la traduction correcte au lieu de simplement l'ID
+            if (window.i18n && window.i18n.translate) {
+                optionElement.textContent = window.i18n.translate(option);
+            } else {
+                optionElement.textContent = option;
+            }
+            
             optionElement.setAttribute('data-option', option);
             
             optionElement.addEventListener('click', handleQuizAnswer);
@@ -1256,8 +1279,15 @@
             optionsContainer.appendChild(optionElement);
         });
         
-        // Mettre à jour le compteur de progression
-        progressCounter.textContent = window.i18n.translateWithVars('question-counter', { current: index + 1, total: wisdomData.questions.length });
+        // Mettre à jour le compteur de progression avec la traduction correcte
+        if (window.i18n && window.i18n.translateWithVars) {
+            progressCounter.textContent = window.i18n.translateWithVars('question-counter', { 
+                current: index + 1, 
+                total: wisdomData.questions.length 
+            });
+        } else {
+            progressCounter.textContent = `Question ${index + 1}/${wisdomData.questions.length}`;
+        }
         
         // Réinitialiser le feedback
         document.querySelector('.quiz-feedback').textContent = '';
