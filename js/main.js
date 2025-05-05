@@ -378,6 +378,12 @@
         // Mélanger les aliments
         const shuffledFoods = [...ministersData.foods].sort(() => Math.random() - 0.5);
         
+        // Vérifier si i18next est disponible
+        if (!window.i18n || !window.i18n.translate) {
+            console.error("Le module de traduction n'est pas disponible");
+            return;
+        }
+        
         // Créer et ajouter les éléments d'aliments
         shuffledFoods.forEach(food => {
             const foodElement = document.createElement('div');
@@ -387,7 +393,20 @@
             foodElement.setAttribute('data-id', food.id); // Important pour la traduction
             
             // Correction: Utiliser la traduction au lieu de l'identifiant
-            foodElement.textContent = window.i18n.translate(food.id);
+            // Vérifier si la traduction existe
+            if (window.i18n.exists && window.i18n.exists(food.id)) {
+                foodElement.textContent = window.i18n.translate(food.id);
+            } else {
+                // Fallback si la traduction n'existe pas
+                console.warn(`Traduction non trouvée pour: ${food.id}`);
+                // Extraire le nom de l'aliment depuis l'ID (food-protein-1 -> protein 1)
+                const nameParts = food.id.split('-');
+                if (nameParts.length >= 2) {
+                    foodElement.textContent = `${nameParts[1]} ${nameParts[2] || ''}`;
+                } else {
+                    foodElement.textContent = food.id;
+                }
+            }
             
             // Ajouter les événements de drag and drop
             foodElement.addEventListener('dragstart', handleDragStart);
@@ -421,6 +440,11 @@
         
         // Définir le score maximum possible pour ce chapitre
         gameState.chapters.ministers.maxScore = ministersData.foods.length * GAME_CONFIG.pointsPerCorrectAction;
+        
+        // Forcer une mise à jour des traductions
+        if (window.i18n && window.i18n.updateAllTranslations) {
+            window.i18n.updateAllTranslations();
+        }
     }
     
     // Gestion du drag and drop pour le chapitre des Ministres
@@ -552,6 +576,10 @@
         matchedPairs = 0;
         attempts = 0;
         
+        // Exposer les compteurs pour que i18n puisse les utiliser
+        window.attemptsCount = attempts;
+        window.matchesCount = matchedPairs;
+        
         // Mettre à jour les compteurs
         document.getElementById('attempts').textContent = window.i18n.translateWithVars('attempts', { count: attempts });
         document.getElementById('matches').textContent = window.i18n.translateWithVars('matches', { count: matchedPairs });
@@ -587,7 +615,13 @@
             
             const frontFace = document.createElement('div');
             frontFace.className = 'memory-card-front';
-            frontFace.textContent = window.i18n.translate(card.id);
+            
+            // Utiliser la traduction
+            if (window.i18n && window.i18n.translate) {
+                frontFace.textContent = window.i18n.translate(card.id);
+            } else {
+                frontFace.textContent = card.id;
+            }
             
             const backFace = document.createElement('div');
             backFace.className = 'memory-card-back';
@@ -639,6 +673,7 @@
         // Si deux cartes sont retournées, vérifier si elles forment une paire
         if (flippedCards.length === 2) {
             attempts++;
+            window.attemptsCount = attempts; // Mettre à jour la variable globale
             document.getElementById('attempts').textContent = window.i18n.translateWithVars('attempts', { count: attempts });
             
             const card1 = flippedCards[0];
@@ -652,6 +687,7 @@
             if ((id1 === pair2 && id2 === pair1) || (id2 === pair1 && id1 === pair2)) {
                 // Match trouvé
                 matchedPairs++;
+                window.matchesCount = matchedPairs; // Mettre à jour la variable globale
                 document.getElementById('matches').textContent = window.i18n.translateWithVars('matches', { count: matchedPairs });
                 
                 // Ajouter des points
@@ -738,7 +774,17 @@
             foodElement.setAttribute('data-element', food.element);
             
             // Correction: Utiliser la traduction au lieu de l'identifiant
-            foodElement.textContent = window.i18n.translate(food.id);
+            if (window.i18n && window.i18n.translate) {
+                foodElement.textContent = window.i18n.translate(food.id);
+            } else {
+                // Fallback
+                const nameParts = food.id.split('-');
+                if (nameParts.length >= 2) {
+                    foodElement.textContent = `${nameParts[0]} ${nameParts[1]}`;
+                } else {
+                    foodElement.textContent = food.id;
+                }
+            }
             
             // Stocker les macros dans des attributs data
             foodElement.setAttribute('data-protein', food.macros.protein);
@@ -766,8 +812,7 @@
         const checkBalanceBtn = document.getElementById('check-balance');
         checkBalanceBtn.addEventListener('click', checkNutritionalBalance);
         
-        // Configurer le
-// Configurer le bouton suivant
+        // Configurer le bouton suivant
         const nextButton = document.getElementById('balance-next');
         nextButton.addEventListener('click', () => {
             // Calculer les étoiles pour ce chapitre
@@ -781,6 +826,11 @@
         
         // Définir le score maximum possible
         gameState.chapters.balance.maxScore = 100; // Valeur arbitraire pour ce mini-jeu
+        
+        // Forcer une mise à jour des traductions
+        if (window.i18n && window.i18n.updateAllTranslations) {
+            window.i18n.updateAllTranslations();
+        }
     }
     
     // Variables pour le drag and drop du chapitre Équilibre
