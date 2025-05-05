@@ -77,7 +77,22 @@ const fallbackInitialization = () => {
                 'symptom-5': 'Vision nocturne réduite',
                 'vitamin-5': 'Vitamine A',
                 'symptom-6': 'Cicatrisation lente',
-                'vitamin-6': 'Zinc'
+                'vitamin-6': 'Zinc',
+                'element-wood-1': 'Légumes verts',
+                'element-wood-2': 'Concombre',
+                'element-wood-3': 'Thé vert (绿茶)',
+                'element-fire-1': 'Poivron rouge',
+                'element-fire-2': 'Gingembre',
+                'element-fire-3': 'Piment (辣椒)',
+                'element-earth-1': 'Pomme de terre',
+                'element-earth-2': 'Millet',
+                'element-earth-3': 'Carotte (胡萝卜)',
+                'element-metal-1': 'Radis blanc',
+                'element-metal-2': 'Oignon',
+                'element-metal-3': 'Poire (梨)',
+                'element-water-1': 'Algues',
+                'element-water-2': 'Poisson',
+                'element-water-3': 'Haricots noirs (黑豆)'
             }
         },
         en: {
@@ -109,7 +124,22 @@ const fallbackInitialization = () => {
                 'symptom-5': 'Reduced night vision',
                 'vitamin-5': 'Vitamin A',
                 'symptom-6': 'Slow healing',
-                'vitamin-6': 'Zinc'
+                'vitamin-6': 'Zinc',
+                'element-wood-1': 'Green vegetables',
+                'element-wood-2': 'Cucumber',
+                'element-wood-3': 'Green tea (绿茶)',
+                'element-fire-1': 'Red bell pepper',
+                'element-fire-2': 'Ginger',
+                'element-fire-3': 'Chili pepper (辣椒)',
+                'element-earth-1': 'Potato',
+                'element-earth-2': 'Millet',
+                'element-earth-3': 'Carrot (胡萝卜)',
+                'element-metal-1': 'White radish',
+                'element-metal-2': 'Onion',
+                'element-metal-3': 'Pear (梨)',
+                'element-water-1': 'Seaweed',
+                'element-water-2': 'Fish',
+                'element-water-3': 'Black beans (黑豆)'
             }
         },
         zh: {
@@ -141,7 +171,22 @@ const fallbackInitialization = () => {
                 'symptom-5': '夜视能力下降',
                 'vitamin-5': '维生素A',
                 'symptom-6': '愈合缓慢',
-                'vitamin-6': '锌'
+                'vitamin-6': '锌',
+                'element-wood-1': '绿色蔬菜',
+                'element-wood-2': '黄瓜',
+                'element-wood-3': '绿茶',
+                'element-fire-1': '红椒',
+                'element-fire-2': '生姜',
+                'element-fire-3': '辣椒',
+                'element-earth-1': '土豆',
+                'element-earth-2': '小米',
+                'element-earth-3': '胡萝卜',
+                'element-metal-1': '白萝卜',
+                'element-metal-2': '洋葱',
+                'element-metal-3': '梨',
+                'element-water-1': '海藻',
+                'element-water-2': '鱼',
+                'element-water-3': '黑豆'
             }
         }
     };
